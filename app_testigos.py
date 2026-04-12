@@ -5,6 +5,7 @@ import re
 import os
 import zipfile
 import io
+import shutil
 from pathlib import Path
 from datetime import datetime
 
@@ -105,11 +106,18 @@ p, label, li, td, th, input, select, textarea,
     animation: road_move 0.5s linear infinite;
 }
 .car-road-dashes-static { position: absolute; bottom: 9px; left: 0; right: 0; height: 2px; }
-.car-driving {
-    position: absolute; bottom: 14px; left: -70px;
-    font-size: 30px; line-height: 1; animation: drive_car 2.8s linear infinite;
+
+.car-vector {
+    position: absolute; bottom: 10px; width: 45px; height: 25px;
+    line-height: 1; display: flex; align-items: center; justify-content: center;
 }
-.car-parked { position: absolute; bottom: 14px; right: 24px; font-size: 30px; line-height: 1; }
+.car-vector svg { width: 100%; height: 100%; }
+.car-body { fill: #888888; }
+.car-windows { fill: #aaaaaa; }
+
+.car-driving { left: -70px; animation: drive_car 3.2s linear infinite; }
+.car-parked { right: 24px; }
+
 .car-status {
     font-family: 'IBM Plex Sans', sans-serif; font-size: 0.72em;
     font-weight: 500; letter-spacing: 0.12em; margin-bottom: 6px;
@@ -123,8 +131,24 @@ _CSS_LIGHT = """
 .stApp { background: #ffffff !important; }
 section[data-testid="stSidebar"] { background: #f7f7f7 !important; border-right: 1px solid #e2e2e2 !important; }
 h1 { color: #111111 !important; font-size: 1.4em !important; font-weight: 700; border-bottom: 2px solid #111; padding-bottom: 8px; }
+
+/* Botones principales y ROJO VINO para descarga */
 .stButton > button[kind="primary"] { background: #111111 !important; color: #ffffff !important; border-radius: 4px !important; }
-[data-testid="stBaseButton-pillsActive"] { background: #722F37 !important; color: #ffffff !important; }
+[data-testid="stBaseButton-pillsActive"] { background: #722F37 !important; color: #ffffff !important; border-color: #722F37 !important; }
+
+/* BOTÓN DE DESCARGA - ROJO VINO */
+.stDownloadButton > button {
+    background-color: #722F37 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 4px !important;
+    font-weight: 600 !important;
+}
+.stDownloadButton > button:hover {
+    background-color: #5a252c !important;
+    color: white !important;
+}
+
 .car-road { background: #f2f2f2 !important; border-color: #ddd !important; }
 .car-road-surface { background: #e4e4e4 !important; border-top-color: #ccc !important; }
 .car-road-dashes-anim, .car-road-dashes-static { background: repeating-linear-gradient(90deg, #99999966 0, #99999966 28px, transparent 28px, transparent 56px) !important; }
@@ -139,6 +163,16 @@ section[data-testid="stSidebar"] { background: #08090f !important; border-right:
 h1 { color: #00d4aa !important; font-size: 1.4em !important; font-weight: 700; border-bottom: 1px solid #151d2b; padding-bottom: 8px; }
 .stButton > button[kind="primary"] { background: #00d4aa !important; color: #06080f !important; border-radius: 4px !important; }
 [data-testid="stBaseButton-pillsActive"] { background: #00d4aa !important; color: #06080f !important; }
+
+/* BOTÓN DE DESCARGA - ROJO VINO TAMBIÉN EN DARK MODE PARA CONSISTENCIA */
+.stDownloadButton > button {
+    background-color: #722F37 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 4px !important;
+    font-weight: 600 !important;
+}
+
 .car-road { background: #080c18 !important; border-color: #1a2535 !important; }
 .car-road-surface { background: #0d1520 !important; border-top-color: #1a2535 !important; }
 .car-road-dashes-anim, .car-road-dashes-static { background: repeating-linear-gradient(90deg, #00d4aa55 0, #00d4aa55 28px, transparent 28px, transparent 56px) !important; }
@@ -155,29 +189,41 @@ _CSS_AUTO = """
 
 # ─── CAR ANIMATION ────────────────────────────────────────────────────────────
 
-DRIVING_CAR_HTML = """
+_CAR_SVG = """
+<svg viewBox="0 0 100 50" xmlns="http://www.w3.org/2000/svg">
+  <path class="car-body" d="M95 30 L90 28 C85 20, 75 15, 65 15 L35 15 C25 15, 15 20, 10 28 L5 30 C2 31, 2 34, 5 35 L10 35 L12 42 A 8 8 0 0 0 28 42 L72 42 A 8 8 0 0 0 88 42 L90 35 L95 35 C98 34, 98 31, 95 30 Z"/>
+  <path class="car-windows" d="M63 18 L37 18 C30 18, 26 21, 25 25 L75 25 C74 21, 70 18, 63 18 Z M50 18 L50 25 M32 25 L68 25" stroke="#ffffff22" stroke-width="1"/>
+</svg>
+"""
+
+DRIVING_CAR_HTML = f"""
 <div class="car-road">
     <div class="car-road-surface"></div>
     <div class="car-road-dashes-anim"></div>
-    <div class="car-driving">🚗</div>
+    <div class="car-vector car-driving">{_CAR_SVG}</div>
 </div>
 <div class="car-status car-status-blink">DESCARGANDO TESTIGOS...</div>
 """
 
-PARKED_CAR_HTML = """
+PARKED_CAR_HTML = f"""
 <div class="car-road">
     <div class="car-road-surface"></div>
     <div class="car-road-dashes-static"></div>
-    <div class="car-parked">🚗</div>
+    <div class="car-vector car-parked">{_CAR_SVG}</div>
 </div>
 <div class="car-status">PROCESO COMPLETADO</div>
 """
 
 # ─── HELPERS ──────────────────────────────────────────────────────────────────
 
-# MODIFICADO: Ahora usa una carpeta interna en el servidor para evitar errores de ruta local
 def find_base_path() -> str:
-    return "temp_downloads"
+    return "/tmp/temp_downloads"
+
+def clean_temp_downloads():
+    path = find_base_path()
+    if os.path.exists(path):
+        shutil.rmtree(path)
+    os.makedirs(path, exist_ok=True)
 
 def detect_source(df: pd.DataFrame) -> str:
     cols = set(df.columns)
@@ -214,17 +260,6 @@ def get_save_folder(base: str, marca: str, month_folder: str) -> Path:
     folder = Path(base) / month_folder / normalize_brand(marca)
     folder.mkdir(parents=True, exist_ok=True)
     return folder
-
-def list_month_folders(base_path: str) -> list[str]:
-    p = Path(base_path)
-    if not p.exists(): return []
-    skip = {".streamlit", ".DS_Store", ".git", ".claude"}
-    return sorted([d.name for d in p.iterdir() if d.is_dir() and d.name not in skip], reverse=True)
-
-def extract_year(folder_name: str) -> str:
-    for part in folder_name.split():
-        if part.isdigit() and len(part) == 4: return part
-    return "Sin año"
 
 def download_file(url: str, folder: Path, filename_base: str):
     try:
@@ -297,6 +332,7 @@ st.set_page_config(page_title="Testigos Competencia", layout="wide")
 
 if "theme_mode" not in st.session_state: st.session_state.theme_mode = "◑"
 if "brand_pills_widget" not in st.session_state: st.session_state["brand_pills_widget"] = BRANDS_LIST
+if "processed" not in st.session_state: st.session_state.processed = False
 
 theme_icon = st.session_state.theme_mode
 if theme_icon == "☀️": st.markdown(_CSS_BASE + _CSS_LIGHT, unsafe_allow_html=True)
@@ -313,10 +349,7 @@ with st.sidebar:
 
     st.divider()
     st.header("Configuracion")
-    
-    # MODIFICADO: Ahora el campo es solo informativo, la app usa una ruta interna segura.
-    base_path = find_base_path()
-    st.info("La app guardará los archivos temporalmente en el servidor para que los descargues como ZIP.")
+    st.info("La app guardará los archivos temporalmente en el servidor. Al terminar, usa el botón rojo vino para descargar el ZIP.")
 
     st.divider()
     st.subheader("Marcas competencia")
@@ -343,7 +376,9 @@ if uploaded_files:
         if not selected_brands: st.error("Selecciona marcas.")
         elif not month_folder.strip(): st.error("Escribe el nombre del mes.")
         else:
+            clean_temp_downloads()
             all_results = []
+            base_path = find_base_path()
             car_slot = st.empty()
             car_slot.markdown(DRIVING_CAR_HTML, unsafe_allow_html=True)
 
@@ -352,36 +387,41 @@ if uploaded_files:
                     df = pd.read_excel(uf)
                     source = detect_source(df)
                     if source == "unknown": continue
-                    
                     prog = st.progress(0); status = st.empty()
                     results = process_file(df, source, selected_brands, base_path, month_folder.strip(), prog, status)
                     all_results.extend(results)
                 except Exception as e: st.error(f"Error en {uf.name}: {e}")
 
             car_slot.markdown(PARKED_CAR_HTML, unsafe_allow_html=True)
-
             if all_results:
-                st.success("¡Proceso terminado!")
-                # MODIFICADO: Botón de descarga ZIP automático al terminar
-                zip_data = build_zip(base_path, month_folder.strip())
-                if zip_data:
-                    st.download_button(
-                        label="📥 DESCARGAR TODOS LOS TESTIGOS (ZIP)",
-                        data=zip_data,
-                        file_name=f"{month_folder.strip()}.zip",
-                        mime="application/zip",
-                        use_container_width=True,
-                        type="primary"
-                    )
+                st.session_state.processed = True
+                st.session_state.df_res = pd.DataFrame(all_results)
+                st.session_state.month_folder = month_folder.strip()
 
-                st.divider()
-                df_res = pd.DataFrame(all_results)
-                c1, c2, c3 = st.columns(3)
-                c1.metric("Total", len(df_res))
-                c2.metric("OK", int(df_res["Exito"].sum()))
-                c3.metric("Ofertas", int(df_res["Oferta Comercial"].sum()))
+if st.session_state.processed:
+    st.divider()
+    df_res = st.session_state.df_res
+    month_folder = st.session_state.month_folder
+    
+    zip_data = build_zip(find_base_path(), month_folder)
+    if zip_data:
+        # MODIFICADO: Botón con color rojo vino (vía CSS) e ícono de carpeta
+        st.download_button(
+            label="📁 DESCARGAR TODOS LOS TESTIGOS (ZIP)",
+            data=zip_data,
+            file_name=f"{month_folder}.zip",
+            mime="application/zip",
+            use_container_width=True,
+        )
+    
+    st.divider()
+    st.success("¡Proceso terminado!")
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Total", len(df_res))
+    c2.metric("OK", int(df_res["Exito"].sum()))
+    c3.metric("Ofertas", int(df_res["Oferta Comercial"].sum()))
 
-                t1, t2, t3 = st.tabs(["Descargados", "Ofertas", "Errores"])
-                with t1: st.dataframe(df_res[df_res["Exito"]][["Marca", "Medio", "Fuente", "Fecha", "Archivo"]], use_container_width=True)
-                with t2: st.dataframe(df_res[df_res["Oferta Comercial"]][["Marca", "Medio", "Fuente", "Fecha", "Texto"]], use_container_width=True)
-                with t3: st.dataframe(df_res[~df_res["Exito"]][["Marca", "Medio", "Fuente", "Fecha", "Error"]], use_container_width=True)
+    t1, t2, t3 = st.tabs(["Descargados", "Ofertas", "Errores"])
+    with t1: st.dataframe(df_res[df_res["Exito"]][["Marca", "Medio", "Fuente", "Fecha", "Archivo"]], use_container_width=True)
+    with t2: st.dataframe(df_res[df_res["Oferta Comercial"]][["Marca", "Medio", "Fuente", "Fecha", "Texto"]], use_container_width=True)
+    with t3: st.dataframe(df_res[~df_res["Exito"]][["Marca", "Medio", "Fuente", "Fecha", "Error"]], use_container_width=True)
