@@ -66,7 +66,7 @@ MEDIO_MAP = {
     "youtube":              "online",
     "search":               "online",
     "banner":               "online",
-    # OOH (todos los TipoPublicidad → ooh)
+    # OOH
     "muro":                 "ooh",
     "tunel":                "ooh",
     "cartelera":            "ooh",
@@ -94,38 +94,28 @@ _CSS_BASE = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Poppins:wght@400;500;600;700&display=swap');
 
-/* ── Fuentes — NO tocar span/div para no romper Material Icons ── */
 h1, h2, h3, h4, h5 { font-family: 'Poppins', sans-serif !important; }
 p, label, li, td, th, input, select, textarea,
 .stMarkdown p, .stText, .stCaption {
     font-family: 'IBM Plex Sans', sans-serif !important;
 }
 
-/* ── Proteger iconos Material (fixes keyboard_double y uploadupload) ── */
 [data-testid="collapsedControl"] span,
 [data-testid="stFileUploaderDropzone"] button span:first-child,
 [class*="material"], .material-icons, .material-symbols-rounded {
     font-family: 'Material Symbols Rounded', 'Material Icons', sans-serif !important;
 }
 
-/* ── Sidebar collapse arrow — siempre visible ── */
 [data-testid="collapsedControl"] {
     display: flex !important; visibility: visible !important; opacity: 1 !important;
 }
 
-/* ── Pills nativos de Streamlit (st.pills) — estilos compactos ── */
-[data-testid="stPills"] {
-    gap: 4px !important;
-}
+[data-testid="stPills"] { gap: 4px !important; }
 [data-testid="stPills"] button {
-    font-size: 10px !important;
-    padding: 2px 8px !important;
-    min-height: 0 !important;
-    line-height: 1.4 !important;
-    border-radius: 3px !important;
+    font-size: 10px !important; padding: 2px 8px !important;
+    min-height: 0 !important; line-height: 1.4 !important; border-radius: 3px !important;
 }
 
-/* ── Animaciones coche ── */
 @keyframes drive_car { from { left: -70px; } to { left: 100%; } }
 @keyframes road_move { from { background-position: 0 0; } to { background-position: 56px 0; } }
 @keyframes blink_txt { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
@@ -206,16 +196,8 @@ hr { border-color: #e2e2e2 !important; margin: 12px 0 !important; }
 .stCheckbox label { color: #555 !important; font-size: 0.84em !important; }
 .stAlert { border-radius: 4px !important; font-size: 0.82em !important; }
 
-[data-testid="stBaseButton-pills"] {
-    background: #f5f5f5 !important;
-    color: #555555 !important;
-    border: 1.5px solid #cccccc !important;
-}
-[data-testid="stBaseButton-pillsActive"] {
-    background: #722F37 !important;
-    color: #ffffff !important;
-    border-color: #722F37 !important;
-}
+[data-testid="stBaseButton-pills"] { background: #f5f5f5 !important; color: #555555 !important; border: 1.5px solid #cccccc !important; }
+[data-testid="stBaseButton-pillsActive"] { background: #722F37 !important; color: #ffffff !important; border-color: #722F37 !important; }
 
 .brand-toggle-on  { display:inline-block; background:#111; color:#fff; border:1px solid #111; border-radius:4px; padding:3px 10px; font-size:11px; font-family:'IBM Plex Sans',sans-serif; font-weight:600; margin:2px; cursor:pointer; letter-spacing:.03em; }
 .brand-toggle-off { display:inline-block; background:#f4f4f4; color:#888; border:1px solid #ddd; border-radius:4px; padding:3px 10px; font-size:11px; font-family:'IBM Plex Sans',sans-serif; font-weight:400; margin:2px; cursor:pointer; letter-spacing:.03em; }
@@ -288,29 +270,16 @@ hr { border-color: #151d2b !important; margin: 12px 0 !important; }
 .stCheckbox label { color: #ffffff !important; font-size: 0.84em !important; }
 .stAlert { border-radius: 4px !important; font-size: 0.82em !important; }
 
-[data-testid="stBaseButton-pills"] {
-    background: #0a1218 !important;
-    color: #ffffff !important;
-    border: 1px solid #1e2e3a !important;
-}
-[data-testid="stBaseButton-pillsActive"] {
-    background: #00d4aa !important;
-    color: #06080f !important;
-    border-color: #00d4aa !important;
-}
+[data-testid="stBaseButton-pills"] { background: #0a1218 !important; color: #ffffff !important; border: 1px solid #1e2e3a !important; }
+[data-testid="stBaseButton-pillsActive"] { background: #00d4aa !important; color: #06080f !important; border-color: #00d4aa !important; }
 
 .brand-toggle-on  { display:inline-block; background:#00d4aa; color:#06080f; border:1px solid #00d4aa; border-radius:4px; padding:3px 10px; font-size:11px; font-family:'IBM Plex Sans',sans-serif; font-weight:700; margin:2px; cursor:pointer; letter-spacing:.03em; }
 .brand-toggle-off { display:inline-block; background:#0a1f18; color:#3a6a5a; border:1px solid #1e3a2e; border-radius:4px; padding:3px 10px; font-size:11px; font-family:'IBM Plex Sans',sans-serif; font-weight:400; margin:2px; cursor:pointer; letter-spacing:.03em; }
 
-[data-testid="stHeader"],
-[data-testid="stToolbar"],
-header[data-testid="stHeader"] {
-    background: #06080f !important;
-    border-bottom: 1px solid #151d2b !important;
+[data-testid="stHeader"], [data-testid="stToolbar"], header[data-testid="stHeader"] {
+    background: #06080f !important; border-bottom: 1px solid #151d2b !important;
 }
-[data-testid="stToolbar"] button,
-[data-testid="stToolbar"] a,
-[data-testid="stHeader"] button {
+[data-testid="stToolbar"] button, [data-testid="stToolbar"] a, [data-testid="stHeader"] button {
     color: #ffffff !important;
 }
 
@@ -367,7 +336,6 @@ def find_base_path() -> str:
             )
             if candidate.exists():
                 return str(candidate)
-    # En Streamlit Cloud (Linux) usar /tmp como carpeta de trabajo
     tmp = Path("/tmp/testigos")
     tmp.mkdir(exist_ok=True)
     return str(tmp)
@@ -421,19 +389,16 @@ def sanitize(s: str, max_len: int = 50) -> str:
 
 
 def slug(s: str) -> str:
-    """Minúsculas sin acentos, espacios → guión bajo."""
     s = unicodedata.normalize("NFD", str(s).lower())
     s = "".join(c for c in s if unicodedata.category(c) != "Mn")
     return re.sub(r"[^\w]", "_", s).strip("_")
 
 
 def get_save_folder(base: str, marca: str, month_folder: str) -> Path:
-    """Estructura: base / mes_año / marca / testigo"""
     folder = Path(base) / slug(month_folder) / slug(normalize_brand(marca))
     target_name = folder.name
     parent = folder.parent
     parent.mkdir(parents=True, exist_ok=True)
-    # macOS es case-insensitive: revisar si hay variante en mayúsculas y renombrarla
     for existing in parent.iterdir():
         if existing.is_dir() and existing.name.lower() == target_name and existing.name != target_name:
             existing.rename(folder)
@@ -503,7 +468,6 @@ def process_file(df, source, selected_brands, base_path, month_folder, prog_bar,
 
     df = df[df["Marca"].notna()].copy()
     df = df[~df["Marca"].astype(str).str.strip().isin(["Total", "No se han aplicado filtros", "nan"])].copy()
-
     df = df[df["Marca"].apply(lambda x: brand_in_selection(x, selected_brands))].copy()
     df = df.drop_duplicates(subset=[url_col])
 
@@ -577,14 +541,15 @@ def process_file(df, source, selected_brands, base_path, month_folder, prog_bar,
 # ─── ZIP ──────────────────────────────────────────────────────────────────────
 
 def build_zip(base_path: str, month_folder: str) -> bytes | None:
-    target = Path(base_path) / month_folder
+    folder_slug = slug(month_folder)
+    target = Path(base_path) / folder_slug
     if not target.exists():
         return None
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
         for file in sorted(target.rglob("*")):
             if file.is_file():
-                zf.write(file, Path(month_folder) / file.relative_to(target))
+                zf.write(file, Path(folder_slug) / file.relative_to(target))
     buf.seek(0)
     return buf.read()
 
