@@ -310,7 +310,7 @@ def process_file(df, source, selected_brands, base_path, month_folder, prog_bar,
 
         fecha_str  = fecha.strftime("%Y-%m-%d") if hasattr(fecha, "strftime") else str(fecha)[:10]
         folder     = get_save_folder(base_path, marca, month_folder)
-        fname_base = sanitize(f"{marca}_{fuente}_{fecha_str}")
+        fname_base = sanitize(f"{marca}_{medio}_{fecha_str}")
         ok, fname, err = download_file(url, folder, fname_base)
         results.append({"Marca": marca, "Medio": medio, "Fuente": fuente, "Fecha": fecha_str, "Exito": ok, "Archivo": fname or "", "Error": err or "", "Oferta Comercial": has_offer(desc), "Texto": desc[:300] if has_offer(desc) else ""})
     return results
