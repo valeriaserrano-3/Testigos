@@ -292,6 +292,7 @@ def process_file(df, source, selected_brands, base_path, month_folder, prog_bar,
     total = len(df)
     if total == 0: return results
 
+        counters = {}
     for i, (_, row) in enumerate(df.iterrows()):
         marca  = normalize_brand(row.get("Marca", ""))
         fuente = sanitize(row.get(fuente_col, "desconocido"))
@@ -310,7 +311,9 @@ def process_file(df, source, selected_brands, base_path, month_folder, prog_bar,
 
         fecha_str  = fecha.strftime("%Y-%m-%d") if hasattr(fecha, "strftime") else str(fecha)[:10]
         folder     = get_save_folder(base_path, marca, month_folder)
-        fname_base = sanitize(f"{marca}_{medio}_{fecha_str}")
+        key = (marca, medio)
+        counters[key] = counters.get(key, 0) + 1
+        fname_base = sanitize(f"{marca}_{medio}_{counters[key]}")
         ok, fname, err = download_file(url, folder, fname_base)
         results.append({"Marca": marca, "Medio": medio, "Fuente": fuente, "Fecha": fecha_str, "Exito": ok, "Archivo": fname or "", "Error": err or "", "Oferta Comercial": has_offer(desc), "Texto": desc[:300] if has_offer(desc) else ""})
     return results
