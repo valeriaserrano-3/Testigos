@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+import streamlit as st
+import pandas as pd
 import requests
 import re
 import os
@@ -250,11 +252,9 @@ def get_extension(content_type: str, url: str) -> str:
     _, ext = os.path.splitext(url.split("?")[0])
     return ext if ext else ".jpg"
 
-# ── CAMBIO 1: sanitize ahora convierte a minúsculas ──
 def sanitize(s: str, max_len: int = 50) -> str:
     return re.sub(r"[^\w\-]", "_", str(s).strip().lower())[:max_len]
 
-# ── CAMBIO 2: get_save_folder usa marca en minúsculas ──
 def get_save_folder(base: str, marca: str, month_folder: str) -> Path:
     folder = Path(base) / month_folder / normalize_brand(marca).lower()
     folder.mkdir(parents=True, exist_ok=True)
@@ -292,7 +292,7 @@ def process_file(df, source, selected_brands, base_path, month_folder, prog_bar,
     total = len(df)
     if total == 0: return results
 
-        counters = {}
+    counters = {}
     for i, (_, row) in enumerate(df.iterrows()):
         marca  = normalize_brand(row.get("Marca", ""))
         fuente = sanitize(row.get(fuente_col, "desconocido"))
@@ -309,8 +309,8 @@ def process_file(df, source, selected_brands, base_path, month_folder, prog_bar,
             results.append({"Marca": marca, "Medio": medio, "Fuente": fuente, "Fecha": str(fecha)[:10], "Exito": False, "Archivo": "", "Error": "URL vacia", "Oferta Comercial": has_offer(desc), "Texto": desc[:300]})
             continue
 
-        fecha_str  = fecha.strftime("%Y-%m-%d") if hasattr(fecha, "strftime") else str(fecha)[:10]
-        folder     = get_save_folder(base_path, marca, month_folder)
+        fecha_str = fecha.strftime("%Y-%m-%d") if hasattr(fecha, "strftime") else str(fecha)[:10]
+        folder    = get_save_folder(base_path, marca, month_folder)
         key = (marca, medio)
         counters[key] = counters.get(key, 0) + 1
         fname_base = sanitize(f"{marca}_{medio}_{counters[key]}")
@@ -378,7 +378,6 @@ if uploaded_files:
         if not selected_brands: st.error("Selecciona marcas.")
         elif not month_folder.strip(): st.error("Escribe el nombre del mes.")
         else:
-            # ── CAMBIO 3: normalizar month_folder a minúsculas con guiones bajos ──
             month_folder = month_folder.strip().lower().replace(" ", "_")
             clean_temp_downloads()
             all_results = []
